@@ -23,6 +23,7 @@ public class AggregatableReports {
 			doLast3Months(impalaConnection, helperTable, verbose, setup, rebuild);
 			doDay(impalaConnection, helperTable, verbose, setup, rebuild);
 			doMonth(impalaConnection, helperTable, verbose, setup, rebuild);
+			doCustom(impalaConnection, eventsTable, helperTable, verbose, setup, rebuild);
 		} finally {
 			impalaConnection.close();
 		}
@@ -76,4 +77,9 @@ public class AggregatableReports {
 		OneMonthTables.updateAlertsOpenedTables(connection, "ma_alerts_opened_", helperTable, verbose, setup, rebuild);
 	}
 	
+	private static void doCustom(final Connection connection, final String eventsTable, final String helperTable, 
+			final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+		AllTables.updateWWETable(connection, eventsTable, verbose, setup, rebuild);
+}
+
 }

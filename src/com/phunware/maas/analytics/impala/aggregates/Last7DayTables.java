@@ -48,7 +48,7 @@ public class Last7DayTables {
 	
 	public static void updateAlertsOpenedTables(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String[] sourceTableNames = {sourceTable + "carrier", sourceTable + "makemodel", sourceTable + "os", sourceTable + "latlong"};
-		final String[] tableNames = {"ma_alerts_opened_last7days_carrier", "ma_alerts_opened_last7days_makemodel", "ma_alerts_opened_7days_os", "ma_alerts_opened_7days_latlong"};
+		final String[] tableNames = {"ma_alerts_opened_last7days_carrier", "ma_alerts_opened_last7days_makemodel", "ma_alerts_opened_last7days_os", "ma_alerts_opened_last7days_latlong"};
 		final String[] tableDefs = {"(applicationid bigint, carrier string, count bigint, tzyearmonthday string) partitioned by (tz tinyint)",
 									"(applicationid bigint, make string, model string, count bigint, tzyearmonthday string) partitioned by (tz tinyint)",
 									"(applicationid bigint, os string, osversion string, count bigint, tzyearmonthday string) partitioned by (tz tinyint)",

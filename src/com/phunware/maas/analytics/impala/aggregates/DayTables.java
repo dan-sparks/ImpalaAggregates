@@ -161,7 +161,7 @@ public class DayTables {
 		final String[] groups = {", devicecarrier", ", devicemake, devicemodel", ", deviceos, deviceosversion", ""};
 		for (int x = 0; x < tableNames.length; x++) {
 			final String tableUpdate = "insert overwrite " + tableNames[x] + " partition (tzyearmonthday, tz) " +
-				"select applicationid" + selects[x] + ", count(*) count, tzyearmonthday, tz " +
+				"select applicationid" + selects[x] + ", count(distinct deviceid) count, tzyearmonthday, tz " +
 				"from "+sourceTable+" e " +
 				"join time_timezones t on (e.utchour = t.utctimestamp) " +
 				"and t.tzyearmonthday between $select max(day) from (select startday day from "+helperTable+" union select from_unixtime(cast(days_sub(endday,62) as bigint), 'yyyy-MM-dd') day from "+helperTable+") a; " +

@@ -103,7 +103,7 @@ public class OneMonthTables {
 		final String[] groups = {", devicecarrier", ", devicemake, devicemodel", ", deviceos, deviceosversion", ""};
 		for (int x = 0; x < tableNames.length; x++) {
 			final String tableUpdate = "insert overwrite " + tableNames[x] + " partition (tzyearmonth, tz) " +
-				"select applicationid" + selects[x] + ", count(*) count, tzyearmonth, tz " +
+				"select applicationid" + selects[x] + ", count(distinct deviceid) count, tzyearmonth, tz " +
 				"from "+sourceTable+" e " +
 				"join time_timezones t on (e.utchour = t.utctimestamp) " +
 				"and tzyearmonth between $select substr(startday,1,7) from " + helperTable + "; and $select substr(endday,1,7) from " + helperTable + "; " +

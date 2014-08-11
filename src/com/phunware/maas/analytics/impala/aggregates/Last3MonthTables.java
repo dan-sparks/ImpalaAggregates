@@ -78,7 +78,7 @@ public class Last3MonthTables {
 		final String[] groups = {", devicecarrier", ", devicemake, devicemodel", ", deviceos, deviceosversion", ""};
 		for (int x = 0; x < tableNames.length; x++) {
 			final String tableUpdate = "insert overwrite " + tableNames[x] + " partition (tz) " +
-				"select applicationid" + selects[x] + ", count(*) count, substr($select endday from " + helperTable + ";,1,7) tzyearmonth, tz " +
+				"select applicationid" + selects[x] + ", count(distinct deviceid) count, substr($select endday from " + helperTable + ";,1,7) tzyearmonth, tz " +
 				"from "+sourceTable+" e " +
 				"join time_timezones t on (e.utchour = t.utctimestamp) " +
 				"and t.tzyearmonth between from_unixtime(cast(months_sub(concat(substr($select endday from " + helperTable + ";,1,7),'-01'),3) as bigint), 'yyyy-MM') " +

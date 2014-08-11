@@ -58,7 +58,7 @@ public class AllTables {
 		final String[] groups = {", devicecarrier", ", devicemake, devicemodel", ", deviceos, deviceosversion", ""};
 		for (int x = 0; x < tableNames.length; x++) {
 			final String tableUpdate = "insert overwrite " + tableNames[x] + " " +
-				"select applicationid" + selects[x] + ", count(*) count " +
+				"select applicationid" + selects[x] + ", count(distinct deviceid) count " +
 				"from "+sourceTable+" " +
 				"group by applicationid" + groups[x];
 			Impala.updateTable(connection, verbose, setup, rebuild, tableNames[x], tableDefs[x], tableUpdate);
@@ -81,6 +81,17 @@ public class AllTables {
 						") a " +
 					"group by applicationid, applicationeventdataeventname " +
 				") a1";		
+		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
+	}
+	
+	public static void updateWWETable(final Connection connection, final String sourceTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+		final String tableName = "ma_wwe_devices";
+		final String tableDef = "(applicationid bigint, deviceid string)";
+		final String tableUpdate = "insert overwrite "+tableName+" " +
+				"select distinct applicationid, deviceid " +
+				"from "+sourceTable+" " +
+				"where action = 'SESSION_STARTS' " +
+				"and applicationid in (232,233) ";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
 	}
 }
