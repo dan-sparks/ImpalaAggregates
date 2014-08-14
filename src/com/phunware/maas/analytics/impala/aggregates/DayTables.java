@@ -112,23 +112,24 @@ public class DayTables {
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
 	}
 	
-	public static void updateAlertOpensAfterAlertTable(final Connection connection, final String alertsTable, final String opensTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
-		final String[] sourceTableNames = {opensTable + "carrier", opensTable + "makemodel", opensTable + "os", opensTable + "latlong"};
+	public static void updateAlertOpensAfterAlertTable(final Connection connection, final String alertsTable, final String eventsTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String[] tableNames = {"ma_session_alert_opens_after_alert_carrier", "ma_session_alert_opens_after_alert_makemodel", "ma_session_alert_opens_after_alert_os", "ma_session_alert_opens_after_alert_latlong"};
 		final String[] tableDefs = {"(applicationid bigint, alertid bigint, alertwhentosend string, carrier string, hour1 bigint, hour2 bigint, hour3 bigint, hour4 bigint, hour5 bigint, hour6 bigint, hour7 bigint, hour8 bigint, hour9 bigint, hour10 bigint, hour11 bigint, hour12 bigint, hour13 bigint, hour14 bigint, hour15 bigint, hour16 bigint, hour17 bigint, hour18 bigint, hour19 bigint, hour20 bigint, hour21 bigint, hour22 bigint, hour23 bigint, hour24 bigint) partitioned by (whentosendday string)",
 									"(applicationid bigint, alertid bigint, alertwhentosend string, make string, model string, hour1 bigint, hour2 bigint, hour3 bigint, hour4 bigint, hour5 bigint, hour6 bigint, hour7 bigint, hour8 bigint, hour9 bigint, hour10 bigint, hour11 bigint, hour12 bigint, hour13 bigint, hour14 bigint, hour15 bigint, hour16 bigint, hour17 bigint, hour18 bigint, hour19 bigint, hour20 bigint, hour21 bigint, hour22 bigint, hour23 bigint, hour24 bigint) partitioned by (whentosendday string)",
 									"(applicationid bigint, alertid bigint, alertwhentosend string, os string, osversion string, hour1 bigint, hour2 bigint, hour3 bigint, hour4 bigint, hour5 bigint, hour6 bigint, hour7 bigint, hour8 bigint, hour9 bigint, hour10 bigint, hour11 bigint, hour12 bigint, hour13 bigint, hour14 bigint, hour15 bigint, hour16 bigint, hour17 bigint, hour18 bigint, hour19 bigint, hour20 bigint, hour21 bigint, hour22 bigint, hour23 bigint, hour24 bigint) partitioned by (whentosendday string)",
 									"(applicationid bigint, alertid bigint, alertwhentosend string, latitude double, longitude double, hour1 bigint, hour2 bigint, hour3 bigint, hour4 bigint, hour5 bigint, hour6 bigint, hour7 bigint, hour8 bigint, hour9 bigint, hour10 bigint, hour11 bigint, hour12 bigint, hour13 bigint, hour14 bigint, hour15 bigint, hour16 bigint, hour17 bigint, hour18 bigint, hour19 bigint, hour20 bigint, hour21 bigint, hour22 bigint, hour23 bigint, hour24 bigint) partitioned by (whentosendday string)"};
-		final String[] selects = {"carrier", "make, model", "os, osversion", "latitude, longitude"};
+		final String[] topSelects = {"carrier", "make, model", "os, osversion", "latitude, longitude"};
+		final String[] selects = {"devicecarrier carrier", "devicemake make, devicemodel model", "deviceos os, deviceosversion osversion", "round(locationlatitude,1) latitude, round(locationlongitude,1) longitude"};
+		final String[] filters = {"", "and devicemake is not null and devicemodel is not null", "and deviceos is not null and deviceosversion is not null", "and locationlatitude is not null and locationlongitude is not null"};
 		for (int t = 0; t < tableNames.length; t++) {
 			String tableUpdate = "insert overwrite " + tableNames[t] + " partition (whentosendday) " +
-				"select applicationid, alertid, whentosend, " + selects[t];
+				"select applicationid, alertid, whentosend, " + topSelects[t];
 			for (int x = 1; x <= 24; x++) {
 				tableUpdate = tableUpdate + ", sum(case when b.hour = " + x + " then count else 0 end) hour" + x + " ";
 			}
 			tableUpdate = tableUpdate + ", substr(whentosend, 1, 10) whentosendday " +
 				"from ( " +
-					"select a.applicationid, a.alertid, a.whentosend, " + selects[t] + ", " + 
+					"select a.applicationid, a.alertid, a.whentosend, " + topSelects[t] + ", " + 
 					"(floor(cast(cast(s.utctimestamp as timestamp) as bigint) - cast(cast(concat(substr(a.whentosend,1,13), ':00:00') as timestamp) as bigint)) / 3600) + 1 hour, " +
 					"sum(s.count) count " +
 					"from ( " +
@@ -139,14 +140,32 @@ public class DayTables {
 						"and utcyearmonthday between from_unixtime(cast(days_sub($select startday from " + helperTable + ";,7) as bigint), 'yyyy-MM-dd') " +
 							"and from_unixtime(cast(days_add($select endday from " + helperTable + ";,7) as bigint), 'yyyy-MM-dd') " +
 					") a " +
-					"left join " + sourceTableNames[t] + " s on (a.applicationid = s.applicationid and a.alertid = s.alertid) " +
-					"where utcyearmonthday between from_unixtime(cast(days_sub($select startday from " + helperTable + ";,7) as bigint), 'yyyy-MM-dd') " +
-							"and from_unixtime(cast(days_add($select endday from " + helperTable + ";,7) as bigint), 'yyyy-MM-dd') " +
-					"group by a.applicationid, a.alertid, a.whentosend, " + selects[t] + ", " +
+					"left join ( " +
+						"select a.applicationid, a.alertid, e.utchour utctimestamp, " + topSelects[t] + ", count(*) count " +
+						"from ( " +
+							"select applicationid, alertopenedalertid alertid, deviceid, min(impalatimestamp) impalatimestamp " +
+							"from " + eventsTable + " " +
+							"where action = 'ALERT_ACKNOWLEDGED_BY_USER' " +
+							filters[t] + " " +
+							"and concat(year,'-',month,'-',day) between from_unixtime(cast(days_sub($select startday from " + helperTable + ";,7) as bigint), 'yyyy-MM-dd') " +
+								"and from_unixtime(cast(days_add($select endday from " + helperTable + ";,7) as bigint), 'yyyy-MM-dd') " +
+            				"group by applicationid, alertopenedalertid, deviceid " +
+            			") a " +
+            			"JOIN ( " +
+            				"select applicationid, alertopenedalertid alertid, deviceid, " + selects[t] + ", impalatimestamp, utchour " +
+            				"from " + eventsTable + " " +
+            				"where action = 'ALERT_ACKNOWLEDGED_BY_USER' " +
+            				filters[t] + " " +
+            				"and concat(year,'-',month,'-',day) between from_unixtime(cast(days_sub($select startday from " + helperTable + ";,7) as bigint), 'yyyy-MM-dd') " +
+								"and from_unixtime(cast(days_add($select endday from " + helperTable + ";,7) as bigint), 'yyyy-MM-dd') " +
+            			") e on (a.applicationid = e.applicationid and a.alertid = e.alertid and a.deviceid = e.deviceid and a.impalatimestamp = e.impalatimestamp) " +
+            			"group by a.applicationid, a.alertid, e.utchour, " + topSelects[t] + " " +
+            		") s ON (a.applicationid = s.applicationid AND a.alertid = s.alertid) " +
+					"group by a.applicationid, a.alertid, a.whentosend, " + topSelects[t] + ", " +
 					"(floor(cast(cast(s.utctimestamp as timestamp) as bigint) - cast(cast(concat(substr(a.whentosend,1,13), ':00:00') as timestamp) as bigint)) / 3600) + 1 " +
 				") b " + 
 				"where hour >= 1 and hour <= 24 " +
-				"group by applicationid, alertid, whentosend, " + selects[t];
+				"group by applicationid, alertid, whentosend, " + topSelects[t];
 			Impala.updateTable(connection, verbose, setup, rebuild, tableNames[t], tableDefs[t], tableUpdate);
 		}
 	}

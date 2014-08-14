@@ -50,6 +50,7 @@ public class NonAggregatableReports {
 			final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		DayTables.updateDistinctDevicesTables(connection, eventsTable, helperTable, verbose, setup, rebuild);
 		DayTables.updateCustomEventDurationTable(connection, eventsTable, helperTable, verbose, setup, rebuild);
+		DayTables.updateAlertOpensAfterAlertTable(connection, "ma_alerts_enqueued_utcyearmonthday", eventsTable, helperTable, verbose, setup, rebuild);
 	}
 	
 	private static void doMonth(final Connection connection, final String eventsTable, final String helperTable, 

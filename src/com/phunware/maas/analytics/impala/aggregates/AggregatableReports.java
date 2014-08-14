@@ -65,7 +65,6 @@ public class AggregatableReports {
 		DayTables.updateAlertsSentOpenedTable(connection, "ma_alerts_sent_utcyearmonthday", "ma_alerts_opened_os", helperTable, verbose, setup, rebuild);
 		DayTables.updateAlertsOpenedTables(connection, "ma_alerts_opened_", helperTable, verbose, setup, rebuild);
 		DayTables.updateSessionsAfterAlertTable(connection, "ma_alerts_enqueued_utcyearmonthday", "ma_session_starts_utcyearmonthday", helperTable, verbose, setup, rebuild);
-		DayTables.updateAlertOpensAfterAlertTable(connection, "ma_alerts_enqueued_utcyearmonthday", "ma_alerts_sent_opened_", helperTable, verbose, setup, rebuild);
 	}
 	
 	private static void doMonth(final Connection connection, final String helperTable, 
