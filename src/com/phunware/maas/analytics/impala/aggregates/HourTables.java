@@ -30,7 +30,7 @@ public class HourTables {
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
 	}
 	
-	public static void updateAlertsOpenedTables(final Connection connection, final String eventsTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	public static void updateAlertsOpenedUTCTables(final Connection connection, final String eventsTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String[] tableNames = {"ma_alerts_opened_carrier", "ma_alerts_opened_makemodel", "ma_alerts_opened_os", "ma_alerts_opened_latlong"};
 		final String[] tableDefs = {"(applicationid bigint, utctimestamp string, carrier string, count bigint) partitioned by (utcyearmonthday string)",
 									"(applicationid bigint, utctimestamp string, make string, model string, count bigint) partitioned by (utcyearmonthday string)",
@@ -158,6 +158,27 @@ public class HourTables {
 				"and concat(year,'-',month,'-',day) between from_unixtime(cast(days_sub($select endday from " + helperTable + ";,2) as bigint), 'yyyy-MM-dd') " +
 					"and from_unixtime(cast(days_add($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
 				"group by applicationid" + groups[x] + ", tztimestamp, tz";
+			Impala.updateTable(connection, verbose, setup, rebuild, tableNames[x], tableDefs[x], tableUpdate);
+		}
+	}
+	
+	public static void updateAlertsOpenedTZTables(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+		final String[] sourceTableNames = {sourceTable + "carrier", sourceTable + "makemodel", sourceTable + "os", sourceTable + "latlong"};
+		final String[] tableNames = {"ma_alerts_opened_tzhour_carrier", "ma_alerts_opened_tzhour_makemodel", "ma_alerts_opened_tzhour_os", "ma_alerts_opened_tzhour_latlong"};
+		final String[] tableDefs = {"(applicationid bigint, carrier string, tztimestamp string, count bigint) partitioned by (tzyearmonthday string, tz tinyint)",
+									"(applicationid bigint, make string, model string, tztimestamp string, count bigint) partitioned by (tzyearmonthday string, tz tinyint)",
+									"(applicationid bigint, os string, osversion string, tztimestamp string, count bigint) partitioned by (tzyearmonthday string, tz tinyint)",
+									"(applicationid bigint, latitude double, longitude double, tztimestamp string, count bigint) partitioned by (tzyearmonthday string, tz tinyint)"};
+		final String[] selects = {"carrier", "make, model", "os, osversion", "latitude, longitude"};
+		for (int x = 0; x < tableNames.length; x++) {
+			final String tableUpdate = "insert overwrite " + tableNames[x] + " partition (tzyearmonthday, tz) " +
+				"select applicationid, " + selects[x] + ", tztimestamp, count(*) count, tzyearmonthday, tz " +
+				"from " + sourceTableNames[x] +" e " +
+				"join time_timezones t on (e.utctimestamp = t.utctimestamp) " +
+				"where tzyearmonthday between $select startday from " + helperTable + "; and $select endday from " + helperTable + "; " +
+				"and e.utcyearmonthday between from_unixtime(cast(days_sub($select startday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+				" and from_unixtime(cast(days_add($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+				"group by applicationid, " + selects[x] + ", tztimestamp, tzyearmonthday, tz";
 			Impala.updateTable(connection, verbose, setup, rebuild, tableNames[x], tableDefs[x], tableUpdate);
 		}
 	}
