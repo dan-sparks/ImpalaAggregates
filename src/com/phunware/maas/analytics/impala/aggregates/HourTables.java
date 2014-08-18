@@ -17,7 +17,7 @@ public class HourTables {
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
 	}
 	
-	public static void updateAlertsSentTable(final Connection connection, final String eventsTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	public static void updateAlertsSentUTCTable(final Connection connection, final String eventsTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_alerts_sent_utcyearmonthday";
 		final String tableDef = "(applicationid bigint, utctimestamp string, count bigint) partitioned by (utcyearmonthday string)";
 		final String tableUpdate = "insert overwrite "+tableName+" partition (utcyearmonthday) " +
@@ -182,5 +182,19 @@ public class HourTables {
 			Impala.updateTable(connection, verbose, setup, rebuild, tableNames[x], tableDefs[x], tableUpdate);
 		}
 	}
-		
+	
+	public static void updateAlertsSentTZTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+		final String tableName = "ma_alerts_sent_tzhour";
+		final String tableDef = "(applicationid bigint, tztimestamp string, count bigint) partitioned by (tzyearmonthday string, tz tinyint)";
+		final String tableUpdate = "insert overwrite "+tableName+" partition (tzyearmonthday, tz) " +
+			"select applicationid, tztimestamp, sum(count) count, tzyearmonthday, tz " +
+			"from "+sourceTable+" e " +
+			"join time_timezones t on (e.utctimestamp = t.utctimestamp) " +
+			"where tzyearmonthday between $select startday from " + helperTable + "; and $select endday from " + helperTable + "; " +
+			"and e.utcyearmonthday between from_unixtime(cast(days_sub($select startday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+			" and from_unixtime(cast(days_add($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+			"group by applicationid, tztimestamp, tzyearmonthday, tz";
+		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
+	}
+
 }
