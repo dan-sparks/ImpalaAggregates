@@ -34,12 +34,14 @@ public class AggregatableReports {
 		HourTables.updateSessionTable(connection, eventsTable, helperTable, verbose, setup, rebuild);
 		HourTables.updateAlertsSentUTCTable(connection, eventsTable, helperTable, verbose, setup, rebuild);
 		HourTables.updateAlertsOpenedUTCTables(connection, eventsTable, helperTable, verbose, setup, rebuild);
-		HourTables.updateCustomKeyTable(connection, eventsTable, helperTable, verbose, setup, rebuild);
-		HourTables.updateCustomEventTable(connection, eventsTable, helperTable, verbose, setup, rebuild);
+		HourTables.updateCustomKeyUTCTable(connection, eventsTable, helperTable, verbose, setup, rebuild);
+		HourTables.updateCustomEventUTCTable(connection, eventsTable, helperTable, verbose, setup, rebuild);
 		HourTables.updateAlertsEnqueuedTable(connection, eventsTable, helperTable, verbose, setup, rebuild);
 		HourTables.updateAlertsSentOpenedTables(connection, eventsTable, helperTable, verbose, setup, rebuild);
 		HourTables.updateAlertsOpenedTZTables(connection, "ma_alerts_opened_", helperTable, verbose, setup, rebuild);
 		HourTables.updateAlertsSentTZTable(connection, "ma_alerts_sent_utcyearmonthday", helperTable, verbose, setup, rebuild);
+		HourTables.updateCustomKeyTZTable(connection, "ma_custom_key_utcyearmonthday", helperTable, verbose, setup, rebuild);
+		HourTables.updateCustomEventTZTable(connection, "ma_custom_event_utcyearmonthday", helperTable, verbose, setup, rebuild);
 	}
 	
 	private static void doAll(final Connection connection, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
