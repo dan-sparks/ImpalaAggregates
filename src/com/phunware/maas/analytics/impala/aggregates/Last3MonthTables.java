@@ -114,4 +114,19 @@ public class Last3MonthTables {
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
 	}
 	
+	public static void updateCustomEventTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+		final String tableName = "ma_custom_event_last3months";
+		final String tableDef = "(applicationid bigint, count bigint, tzyearmonth string) partitioned by (tz tinyint)"; 
+		final String tableUpdate = "insert overwrite " + tableName + " partition(tz) " +
+				"select applicationid, sum(count) count, substr($select endday from " + helperTable + ";,1,7) tzyearmonth, tz " +
+				"from "+sourceTable+" e " +
+				"join time_timezones t on (e.utcyearmonthday = t.utcyearmonthday) " +
+				"where t.tzyearmonth between from_unixtime(cast(months_sub(concat(substr($select endday from " + helperTable + ";,1,7),'-01'),3) as bigint), 'yyyy-MM') " +
+					"and from_unixtime(cast(months_sub(concat(substr($select endday from " + helperTable + ";,1,7),'-01'),1) as bigint), 'yyyy-MM') " +
+					"and e.utcyearmonthday between from_unixtime(cast(days_sub(months_sub(concat(substr($select endday from " + helperTable + ";,1,7),'-01'),3),1) as bigint), 'yyyy-MM-dd') " +
+				"and concat(substr($select endday from " + helperTable + ";,1,7),'-01')  " +
+				"group by applicationid, tz";
+		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
+	}
+	
 }

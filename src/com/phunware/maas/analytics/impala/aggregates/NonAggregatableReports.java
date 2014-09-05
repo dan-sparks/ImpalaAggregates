@@ -29,6 +29,7 @@ public class NonAggregatableReports {
 	private static void doHours(final Connection connection, final String eventsTable, final String helperTable, 
 			final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		HourTables.updateDistinctDevicesTables(connection, eventsTable, helperTable, verbose, setup, rebuild);
+		HourTables.updateCustomEventDurationTable(connection, eventsTable, helperTable, verbose, setup, rebuild);
 	}
 
 	private static void doAll(final Connection connection, final String eventsTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {

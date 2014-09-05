@@ -37,10 +37,12 @@ public class Impala {
 	
 	public static void doStatement(final Connection connection, final String sql, final boolean printSql) throws SQLException {
 		final Statement stmt = connection.createStatement();
-		//System.out.println(sql);
+		if (printSql) {
+			System.out.println(sql);
+		}
 		final String executableSQL = getCleanStatement(connection, sql);
 		try {
-			if (printSql) {
+			if (printSql && !sql.equals(executableSQL)) {
 				System.out.println(executableSQL);
 			}
 			stmt.execute(executableSQL);

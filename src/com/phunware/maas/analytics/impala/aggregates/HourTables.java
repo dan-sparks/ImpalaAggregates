@@ -224,4 +224,53 @@ public class HourTables {
     			"group by applicationid, tztimestamp, tzyearmonthday, tz";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);		
 	}
+	
+	public static void updateAlertsSentOpenedTable(final Connection connection, final String sentTable, final String openedTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+		final String tableName = "ma_alerts_sent_opened_tzhour";
+		final String tableDef = "(applicationid bigint, sentcount bigint, openedcount bigint, tztimestamp string) partitioned by (tzyearmonthday string, tz tinyint)";
+		final String tableUpdate = "insert overwrite "+tableName+" partition(tzyearmonthday, tz) " +
+			"select a.applicationid, sum(a.count) sentcount, sum(nvl(b.count,0)) openedcount, tztimestamp, tzyearmonthday, tz " +
+			"from ( " +
+				"select applicationid, sum(count) count, utctimestamp " +
+				"from " + sentTable + " e " +
+				"where e.utcyearmonthday between from_unixtime(cast(days_sub($select startday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+				" and from_unixtime(cast(days_add($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+				"group by applicationid, utctimestamp " +
+			") a " +
+			"left join ( " +
+				"select applicationid, sum(count) count, utctimestamp " +
+				"from " + openedTable + " e " +
+				"where e.utcyearmonthday between from_unixtime(cast(days_sub($select startday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+				" and from_unixtime(cast(days_add($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+				"group by applicationid, utctimestamp " +
+			") b on (a.applicationid = b.applicationid and a.utctimestamp = b.utctimestamp) " +
+			"join time_timezones t on (a.utctimestamp = t.utctimestamp) " +
+			"where tzyearmonthday between $select startday from " + helperTable + "; and $select endday from " + helperTable + "; " +
+			"group by a.applicationid, tztimestamp, tzyearmonthday, tz";
+		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
+	}
+	
+	public static void updateCustomEventDurationTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+		final String tableName = "ma_custom_event_duration_tzhour";
+		final String tableDef = "(applicationid bigint, eventname string, count bigint, average double, median double, tztimestamp string) partitioned by (tzyearmonthday string, tz tinyint)";
+		final String tableUpdate = "insert overwrite "+tableName+" partition (tzyearmonthday, tz) " +
+				"select applicationid, eventname, count, average, round(cast(median as double),0) median, tztimestamp, tzyearmonthday, tz " +
+				"from ( " +
+					"select applicationid, applicationeventdataeventname eventname, count(*) count, round(avg(applicationeventdataduration),0) average, median(applicationeventdataduration) median, tztimestamp, tzyearmonthday, tz " +
+					"from ( " + 
+						"select applicationid, applicationeventdataeventname, applicationeventdataduration, tztimestamp, tzyearmonthday, tz " +
+						"from "+sourceTable+" e " +
+						"join time_timezones t on (e.utchour = t.utctimestamp) " +
+						"where action = 'USER_GENERATED' " +
+						"and applicationeventdataduration is not null " +
+						"and t.tzyearmonthday between $select max(day) from (select startday day from "+helperTable+" union select from_unixtime(cast(days_sub(endday,62) as bigint), 'yyyy-MM-dd') day from "+helperTable+") a; " +
+						" and $select endday from "+helperTable+"; " +
+						"and concat(year,'-',month,'-',day) between $select from_unixtime(cast(days_sub(max(day),1) as bigint), 'yyyy-MM-dd') from (select startday day from "+helperTable+" union select from_unixtime(cast(days_sub(endday,62) as bigint), 'yyyy-MM-dd') day from "+helperTable+") a; " +
+							"and from_unixtime(cast(days_add($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+						"limit 100000000 " +
+						") a " +
+					"group by applicationid, applicationeventdataeventname, tztimestamp, tzyearmonthday, tz " +
+				") a1";		
+		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
+	}
 }

@@ -42,6 +42,7 @@ public class AggregatableReports {
 		HourTables.updateAlertsSentTZTable(connection, "ma_alerts_sent_utcyearmonthday", helperTable, verbose, setup, rebuild);
 		HourTables.updateCustomKeyTZTable(connection, "ma_custom_key_utcyearmonthday", helperTable, verbose, setup, rebuild);
 		HourTables.updateCustomEventTZTable(connection, "ma_custom_event_utcyearmonthday", helperTable, verbose, setup, rebuild);
+		HourTables.updateAlertsSentOpenedTable(connection, "ma_alerts_sent_utcyearmonthday", "ma_alerts_opened_os", helperTable, verbose, setup, rebuild);
 	}
 	
 	private static void doAll(final Connection connection, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
@@ -54,12 +55,14 @@ public class AggregatableReports {
 		Last7DayTables.updateSessionTable(connection, "ma_session_starts_utcyearmonthday", helperTable, verbose, setup, rebuild);
 		Last7DayTables.updateAlertsSentOpenedTable(connection, "ma_alerts_sent_utcyearmonthday", "ma_alerts_opened_os", helperTable, verbose, setup, rebuild);
 		Last7DayTables.updateAlertsOpenedTables(connection, "ma_alerts_opened_", helperTable, verbose, setup, rebuild);
+		Last7DayTables.updateCustomEventTable(connection, "ma_custom_event_utcyearmonthday", helperTable, verbose, setup, rebuild);
 	}
 	
 	private static void doLast3Months(final Connection connection, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		Last3MonthTables.updateSessionTable(connection, "ma_session_starts_utcyearmonthday", helperTable, verbose, setup, rebuild);
 		Last3MonthTables.updateAlertsSentOpenedTable(connection, "ma_alerts_sent_utcyearmonthday", "ma_alerts_opened_os", helperTable, verbose, setup, rebuild);
 		Last3MonthTables.updateAlertsOpenedTables(connection, "ma_alerts_opened_", helperTable, verbose, setup, rebuild);
+		Last3MonthTables.updateCustomEventTable(connection, "ma_custom_event_utcyearmonthday", helperTable, verbose, setup, rebuild);
 	}
 	
 	private static void doDay(final Connection connection, final String helperTable, 

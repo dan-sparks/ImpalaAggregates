@@ -114,4 +114,19 @@ public class Last7DayTables {
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
 	}
 	
+	public static void updateCustomEventTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+		final String tableName = "ma_custom_event_last7days";
+		final String tableDef = "(applicationid bigint, count bigint, tzyearmonthday string) partitioned by (tz tinyint)"; 
+		final String tableUpdate = "insert overwrite " + tableName + " partition(tz) " +
+				"select applicationid, sum(count) count, $select endday from " + helperTable + "; tzyearmonthday, tz " +
+				"from "+sourceTable+" e " +
+				"join time_timezones t on (e.utcyearmonthday = t.utcyearmonthday) " +
+				"where t.tzyearmonthday between from_unixtime(cast(days_sub($select endday from " + helperTable + ";,7) as bigint), 'yyyy-MM-dd') " +
+					"and from_unixtime(cast(days_sub($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
+				"and e.utcyearmonthday between from_unixtime(cast(days_sub($select endday from " + helperTable + ";,8) as bigint), 'yyyy-MM-dd') " +
+					"and $select endday from " + helperTable + "; " +
+				"group by applicationid, tz";
+		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
+	}
+	
 }
