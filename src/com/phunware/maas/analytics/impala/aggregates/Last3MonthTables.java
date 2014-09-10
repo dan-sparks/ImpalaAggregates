@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 public class Last3MonthTables {
 
-	public static void updateSessionTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateSessionTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_session_starts_last3months";
 		final String tableDef = "(applicationid bigint, tzhour string, count bigint, tzyearmonth string) partitioned by (tz tinyint)";
 		final String tableUpdate = "insert overwrite " + tableName + " partition(tz) " +
@@ -18,9 +18,9 @@ public class Last3MonthTables {
 					"and concat(substr($select endday from " + helperTable + ";,1,7),'-01')  " +
 				"group by applicationid, tzhour, tz";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
-	}
+	}*/
 	
-	public static void updateAlertsSentOpenedTable(final Connection connection, final String sentTable, final String openedTable, final String helperTable,  final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateAlertsSentOpenedTable(final Connection connection, final String sentTable, final String openedTable, final String helperTable,  final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_alerts_sent_opened_last3months";
 		final String tableDef = "(applicationid bigint, sentcount bigint, openedcount bigint, tzyearmonth string) partitioned by (tz tinyint)";
 		final String tableUpdate = "insert overwrite "+tableName+" partition(tz) " +
@@ -44,9 +44,9 @@ public class Last3MonthTables {
 				"and from_unixtime(cast(months_sub(concat(substr($select endday from " + helperTable + ";,1,7),'-01'),1) as bigint), 'yyyy-MM') " +
 			"group by a.applicationid, a.tzyearmonth, tz";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
-	}
+	}*/
 	
-	public static void updateAlertsOpenedTables(final Connection connection, final String sourceTable, final String helperTable,  final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateAlertsOpenedTables(final Connection connection, final String sourceTable, final String helperTable,  final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String[] sourceTableNames = {sourceTable + "carrier", sourceTable + "makemodel", sourceTable + "os", sourceTable + "latlong"};
 		final String[] tableNames = {"ma_alerts_opened_last3months_carrier", "ma_alerts_opened_last3months_makemodel", "ma_alerts_opened_last3months_os", "ma_alerts_opened_last3months_latlong"};
 		final String[] tableDefs = {"(applicationid bigint, carrier string, count bigint, tzyearmonth string) partitioned by (tz tinyint)",
@@ -66,7 +66,7 @@ public class Last3MonthTables {
 				"group by applicationid, " + selects[x] + ", tz";
 			Impala.updateTable(connection, verbose, setup, rebuild, tableNames[x], tableDefs[x], tableUpdate);
 		}
-	}
+	}*/
 	
 	public static void updateDistinctDevicesTables(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String[] tableNames = {"ma_distinct_devices_last3months_carrier", "ma_distinct_devices_last3months_makemodel", "ma_distinct_devices_last3months_os", "ma_distinct_devices_last3months_appid"};
@@ -114,7 +114,7 @@ public class Last3MonthTables {
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
 	}
 	
-	public static void updateCustomEventTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateCustomEventTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_custom_event_last3months";
 		final String tableDef = "(applicationid bigint, count bigint, tzyearmonth string) partitioned by (tz tinyint)"; 
 		final String tableUpdate = "insert overwrite " + tableName + " partition(tz) " +
@@ -123,10 +123,10 @@ public class Last3MonthTables {
 				"join time_timezones t on (e.utcyearmonthday = t.utcyearmonthday) " +
 				"where t.tzyearmonth between from_unixtime(cast(months_sub(concat(substr($select endday from " + helperTable + ";,1,7),'-01'),3) as bigint), 'yyyy-MM') " +
 					"and from_unixtime(cast(months_sub(concat(substr($select endday from " + helperTable + ";,1,7),'-01'),1) as bigint), 'yyyy-MM') " +
-					"and e.utcyearmonthday between from_unixtime(cast(days_sub(months_sub(concat(substr($select endday from " + helperTable + ";,1,7),'-01'),3),1) as bigint), 'yyyy-MM-dd') " +
-				"and concat(substr($select endday from " + helperTable + ";,1,7),'-01')  " +
+				"and e.utcyearmonthday between from_unixtime(cast(days_sub(months_sub(concat(substr($select endday from " + helperTable + ";,1,7),'-01'),3),1) as bigint), 'yyyy-MM-dd') " +
+					"and concat(substr($select endday from " + helperTable + ";,1,7),'-01')  " +
 				"group by applicationid, tz";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
-	}
+	}*/
 	
 }

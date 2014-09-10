@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 public class OneMonthTables {
 	
-	public static void updateSessionTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateSessionTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_session_starts_last1month";
 		final String tableDef = "(applicationid bigint, tzhour string, count bigint, tzyearmonth string) partitioned by (tz tinyint)";
 		final String tableUpdate = "insert overwrite " + tableName + " partition(tz) " +
@@ -17,7 +17,7 @@ public class OneMonthTables {
 				" and concat(substr(from_unixtime(cast(months_add($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd'), 1, 7), '-01') " +
 				"group by applicationid, tzhour, tzyearmonth, tz";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
-	}
+	}*/
 	
 	public static void updateCustomEventTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_custom_event_tzmonth";

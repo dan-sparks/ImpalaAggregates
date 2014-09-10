@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 public class Last7DayTables {
 
-	public static void updateSessionTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateSessionTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_session_starts_last7days";
 		final String tableDef = "(applicationid bigint, tzhour string, count bigint, tzyearmonthday string) partitioned by (tz tinyint)";
 		final String tableUpdate = "insert overwrite " + tableName + " partition(tz) " +
@@ -18,9 +18,9 @@ public class Last7DayTables {
 					"and $select endday from " + helperTable + "; " +
 				"group by applicationid, tzhour, tz";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
-	}
+	}*/
 	
-	public static void updateAlertsSentOpenedTable(final Connection connection, final String sentTable, final String openedTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateAlertsSentOpenedTable(final Connection connection, final String sentTable, final String openedTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_alerts_sent_opened_last7days";
 		final String tableDef = "(applicationid bigint, sentcount bigint, openedcount bigint, tzyearmonthday string) partitioned by (tz tinyint)";
 		final String tableUpdate = "insert overwrite "+tableName+" partition(tz) " +
@@ -44,9 +44,9 @@ public class Last7DayTables {
 					"and from_unixtime(cast(days_sub($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
 			"group by a.applicationid, a.tzyearmonthday, tz";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
-	}
+	}*/
 	
-	public static void updateAlertsOpenedTables(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateAlertsOpenedTables(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String[] sourceTableNames = {sourceTable + "carrier", sourceTable + "makemodel", sourceTable + "os", sourceTable + "latlong"};
 		final String[] tableNames = {"ma_alerts_opened_last7days_carrier", "ma_alerts_opened_last7days_makemodel", "ma_alerts_opened_last7days_os", "ma_alerts_opened_last7days_latlong"};
 		final String[] tableDefs = {"(applicationid bigint, carrier string, count bigint, tzyearmonthday string) partitioned by (tz tinyint)",
@@ -66,7 +66,7 @@ public class Last7DayTables {
 				"group by applicationid, " + selects[x] + ", tz";
 			Impala.updateTable(connection, verbose, setup, rebuild, tableNames[x], tableDefs[x], tableUpdate);
 		}
-	}
+	}*/
 	
 	public static void updateDistinctDevicesTables(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String[] tableNames = {"ma_distinct_devices_last7days_carrier", "ma_distinct_devices_last7days_makemodel", "ma_distinct_devices_last7days_os", "ma_distinct_devices_last7days_appid"};
@@ -114,7 +114,7 @@ public class Last7DayTables {
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
 	}
 	
-	public static void updateCustomEventTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateCustomEventTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_custom_event_last7days";
 		final String tableDef = "(applicationid bigint, count bigint, tzyearmonthday string) partitioned by (tz tinyint)"; 
 		final String tableUpdate = "insert overwrite " + tableName + " partition(tz) " +
@@ -127,6 +127,6 @@ public class Last7DayTables {
 					"and $select endday from " + helperTable + "; " +
 				"group by applicationid, tz";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
-	}
+	}*/
 	
 }

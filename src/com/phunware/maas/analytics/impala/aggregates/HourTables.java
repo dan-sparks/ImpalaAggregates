@@ -107,7 +107,7 @@ public class HourTables {
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);		
 	}
 	
-	public static void updateAlertsSentOpenedTables(final Connection connection, final String eventsTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateAlertsSentOpenedTables(final Connection connection, final String eventsTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String[] tableNames = {"ma_alerts_sent_opened_carrier", "ma_alerts_sent_opened_makemodel", "ma_alerts_sent_opened_os", "ma_alerts_sent_opened_latlong"};
 		final String[] tableDefs = {"(alertid bigint, alertwhentosend string, applicationid bigint, utctimestamp string, carrier string, count bigint) partitioned by (utcyearmonthday string)",
 									"(alertid bigint, alertwhentosend string, applicationid bigint, utctimestamp string, make string, model string, count bigint) partitioned by (utcyearmonthday string)",
@@ -138,7 +138,7 @@ public class HourTables {
 					") a1 on (a0.applicationid = a1.applicationid and a0.alertid = a1.alertid)";
 			Impala.updateTable(connection, verbose, setup, rebuild, tableNames[x], tableDefs[x], tableUpdate);
 		}
-	}
+	}*/
 	
 	public static void updateDistinctDevicesTables(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String[] tableNames = {"ma_distinct_devices_tzhour_carrier", "ma_distinct_devices_tzhour_makemodel", "ma_distinct_devices_tzhour_os", "ma_distinct_devices_tzhour_appid"};
@@ -183,7 +183,7 @@ public class HourTables {
 		}
 	}
 	
-	public static void updateAlertsSentTZTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
+	/*public static void updateAlertsSentTZTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_alerts_sent_tzhour";
 		final String tableDef = "(applicationid bigint, tztimestamp string, count bigint) partitioned by (tzyearmonthday string, tz tinyint)";
 		final String tableUpdate = "insert overwrite "+tableName+" partition (tzyearmonthday, tz) " +
@@ -195,7 +195,7 @@ public class HourTables {
 			" and from_unixtime(cast(days_add($select endday from " + helperTable + ";,1) as bigint), 'yyyy-MM-dd') " +
 			"group by applicationid, tztimestamp, tzyearmonthday, tz";
 		Impala.updateTable(connection, verbose, setup, rebuild, tableName, tableDef, tableUpdate);
-	}
+	}*/
 
 	public static void updateCustomKeyTZTable(final Connection connection, final String sourceTable, final String helperTable, final boolean verbose, final boolean setup, final boolean rebuild) throws SQLException {
 		final String tableName = "ma_custom_key_tzhour";
